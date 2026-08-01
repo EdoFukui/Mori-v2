@@ -1,0 +1,14 @@
+{
+  "name": "mori-2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "migrate:plantas": "node scripts/migrate-plantas.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5"
+  }
+}

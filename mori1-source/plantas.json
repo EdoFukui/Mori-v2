@@ -1,0 +1,68 @@
+[
+    {
+        "id": "anthurium-crystallinum-01",
+        "nombre": "Anthurium sp Crystallinum",
+        "especie": "Anthurium crystallinum",
+        "categoria": "venta",
+        "precio": 20000,
+        "estado": "disponible",
+        "tamaño": "pequeño",
+        "condicion": "Enraizado",
+        "imagen": "assets/ejemplares/Anthurium_sp_Crystallinum.webp"
+    },
+    {
+        "id": "alocasia-piccolini-01",
+        "nombre": "Alocasia sp Piccolini",
+        "especie": "Alocasia piccolini",
+        "categoria": "venta",
+        "precio": 12000,
+        "estado": "disponible",
+        "tamaño": "pequeño",
+        "condicion": "Enraizado",
+        "imagen": "assets/ejemplares/Alocasia_sp_Piccolini.webp"
+    },
+    {
+        "id": "scindapsus-manjula-01",
+        "nombre": "Scindapsus sp Manjula",
+        "especie": "Scindapsus pictus 'Manjula'",
+        "categoria": "trueque",
+        "precio": null,
+        "estado": "disponible",
+        "tamaño": "pequeño",
+        "condicion": "Enraizado",
+        "imagen": "assets/ejemplares/Scindapsus_sp_Manjula_1.webp"
+    },
+    {
+        "id": "scindapsus-manjula-02",
+        "nombre": "Scindapsus sp Manjula",
+        "especie": "Scindapsus pictus 'Manjula'",
+        "categoria": "venta",
+        "precio": 10000,
+        "estado": "disponible",
+        "tamaño": "pequeño",
+        "condicion": "Enraizado",
+        "imagen": "assets/ejemplares/Scindapsus_sp_Manjula_2.webp"
+    },
+    {
+        "id": "scindapsus-golden-01",
+        "nombre": "Scindapsus sp Golden",
+        "especie": "Scindapsus pictus 'Golden'",
+        "categoria": "trueque",
+        "precio": null,
+        "estado": "disponible",
+        "tamaño": "pequeño",
+        "condicion": "Enraizado",
+        "imagen": "assets/ejemplares/Scindapsus_sp_Golden.webp"
+    },
+    {
+        "id": "scindapsus-marble-queen-01",
+        "nombre": "Scindapsus sp Marble Queen",
+        "especie": "Scindapsus pictus 'Marble Queen'",
+        "categoria": "trueque",
+        "precio": null,
+        "estado": "disponible",
+        "tamaño": "pequeño",
+        "condicion": "Enraizado",
+        "imagen": "assets/ejemplares/Scindapsus_sp_Marble_Queen.webp"
+    }
+]
