@@ -1,0 +1,99 @@
+/* ============================================
+   BASE — Reset, variables, tipografía, fondo
+   ============================================
+   Copiado sin cambios desde src/css/base.css de Mori 1.0. */
+
+@font-face {
+    font-family: 'Ananda';
+    src: url('../../assets/fonts/Ananda.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --color-text: #1e211e;
+    --color-accent: #4a3b28;
+    --color-veil: rgba(255, 255, 255, 0.15);
+
+    --font-title: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-logo: 'Ananda', var(--font-title);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    color: var(--color-text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    background-color: transparent;
+    overflow-x: hidden;
+}
+
+#fondo-timelapse {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    object-fit: cover;
+}
+
+body.fondo-estatico::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background-image: url('../../assets/hero-movil.webp');
+    background-size: cover;
+    background-position: center;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--color-veil);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.titulo-seccion {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 60px;
+    color: var(--color-text);
+    position: relative;
+    z-index: 1;
+}

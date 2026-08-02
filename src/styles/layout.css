@@ -1,0 +1,120 @@
+/* ============================================
+   LAYOUT — Header, navegación, secciones, footer
+   ============================================
+   Copiado sin cambios desde src/css/layout.css de Mori 1.0. */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+}
+
+.logo {
+    font-family: var(--font-logo);
+    font-size: 3rem;
+    font-weight: normal;
+    color: var(--color-text);
+    text-decoration: none;
+    line-height: 1;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--color-text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+nav a:hover {
+    opacity: 0.7;
+}
+
+section {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 50px;
+    box-sizing: border-box;
+}
+
+.footer-contenido {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-texto {
+    font-size: 0.85rem;
+    color: #fdfbf7;
+    margin: 0;
+}
+
+.footer-redes {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-redes a {
+    display: inline-flex;
+    color: #fdfbf7;
+    transition: opacity 0.3s ease;
+}
+
+.footer-redes a:hover {
+    opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    header {
+        position: relative;
+        padding: 20px;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    nav ul {
+        gap: 20px;
+    }
+
+    .footer-contenido {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 380px) {
+    nav ul {
+        gap: 12px 18px;
+    }
+
+    nav a {
+        font-size: 0.85rem;
+    }
+}

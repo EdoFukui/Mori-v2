@@ -27,13 +27,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { RutaProtegida } from '../components/admin/RutaProtegida';
 import { rutasAuth } from './rutasAuth';
-
-// Placeholder temporal para "/" y "/admin" — cada uno se retira cuando
-// Capa 3 (tienda pública) y Capa 4 (panel admin) entreguen sus rutas
-// reales. No pertenecen a ninguna capa como código definitivo.
-function InicioPlaceholder() {
-  return <p>Tienda pública — pendiente (Capa 3).</p>;
-}
+import { rutasPublicas } from './rutasPublicas';
 
 function PanelAdminPlaceholder() {
   return <p>Panel admin — pendiente (Capa 4). Si ves esto, la sesión es válida.</p>;
@@ -42,7 +36,7 @@ function PanelAdminPlaceholder() {
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<InicioPlaceholder />} />
+      {rutasPublicas}
 
       {rutasAuth}
 
