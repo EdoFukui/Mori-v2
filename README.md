@@ -1,123 +1,93 @@
-# Capa 2 — Autenticación (implementación)
+# Capa 6 — Testing (consolidada, con correcciones aplicadas)
 
-Archivos entregados para integrar en `mori-2.0`. Copia la carpeta `src/`
-sobre la existente en tu proyecto (sobrescribe `main.tsx`, agrega los
-archivos nuevos) y coloca `.env.example` en la raíz del repo.
+Esta entrega integra el trabajo original de Capa 6 (Jest + RTL, 12
+tests) más dos correcciones que decidí aplicar sobre los hallazgos que
+esa capa reportó — señaladas explícitamente, no aplicadas en silencio.
 
-## Patrón de routing (actualizado tras revisión del supervisor)
+## Instalación
 
-La primera entrega centralizaba el router entero en `main.tsx`, lo cual
-iba a chocar en cuanto Capa 3 y Capa 4 necesitaran agregar sus propias
-rutas. Se corrigió a este patrón:
+Copiá el contenido de esta carpeta sobre `Mori-v2/`, respetando la
+estructura. **`package.json` reemplaza al existente** (agrega
+devDependencies de testing + el script `test`; ninguna dependencia de
+producción cambia).
 
-- `main.tsx` — solo monta `<App />`. No se vuelve a tocar.
-- `App.tsx` — providers globales (`AuthProvider`) + `BrowserRouter` +
-  `<AppRoutes />`. Tampoco debería necesitar cambios frecuentes.
-- `src/routes/rutasAuth.tsx` — Capa 2 declara únicamente sus propias
-  rutas (`/admin/login`).
-- `src/routes/index.tsx` — **el único archivo compartido entre capas**.
-  Importa y compone las rutas de cada una. Agregar una capa nueva es
-  un import + una línea, no una reescritura.
-
-`RutaProtegida` cambió de envolver `children` a ser una **ruta de
-layout** (renderiza `<Outlet />`). Esto permite que Capa 4 anide
-cuantas rutas `/admin/*` necesite bajo la misma protección, sin que
-este componente tenga que conocerlas:
-
-```tsx
-<Route element={<RutaProtegida />}>
-  {rutasAdmin /* Capa 4 agrega las que necesite */}
-</Route>
+```bash
+npm install
+npm test
 ```
 
-Cuando Capa 3 y Capa 4 empiecen, cada una crea su propio archivo
-(`src/routes/rutasPublicas.tsx`, `src/routes/rutasAdmin.tsx`) exportando
-un array de `<Route>`, y solo tocan `src/routes/index.tsx` para
-registrarlo — ver el ejemplo comentado dentro de ese archivo.
+## Qué contiene
 
-**Nota para la guía del proyecto:** esto es un cambio de convención de
-estructura de carpetas (sección 2.3 de `mori-2.0-guia-proyecto.md`), no
-un cambio al contrato de datos (`Ejemplar` ni el esquema de
-`ejemplares` siguen intactos). Si el supervisor está de acuerdo,
-conviene reflejarlo en la guía para que Capa 3 y Capa 4 lo sigan desde
-el inicio.
+| Archivo | Origen | Cambio |
+|---|---|---|
+| `jest.config.cjs` | Capa 6 | Sin cambios |
+| `babel.config.cjs` | Capa 6 | Sin cambios |
+| `src/tests/setupTests.ts` | Capa 6 | Sin cambios |
+| `src/tests/styleMock.cjs` | Capa 6 | Sin cambios |
+| `src/pages/admin/EjemplarFormulario.test.tsx` | Capa 6 | Sin cambios |
+| `src/components/publico/Catalogo.test.tsx` | Capa 6 | Sin cambios |
+| `src/components/publico/ModalEjemplar.test.tsx` | Capa 6 | Sin cambios |
+| `package.json` | Capa 6 | Sin cambios (ya coincidía con el real del repo) |
+| `src/pages/admin/EjemplarFormulario.tsx` | Capa 4 | **Comentario agregado** — ver Corrección 1 |
+| `src/components/publico/TarjetaEjemplar.tsx` | Capa 3 | **Código modificado** — ver Corrección 2 |
 
-## Qué hace cada archivo
+## Correcciones aplicadas
 
-- **`src/lib/supabase.ts`** — Inicializa el cliente de Supabase leyendo
-  `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` desde `.env`. Lanza un
-  error explícito al arrancar si faltan, en vez de fallar en silencio
-  más adelante con un error críptico de red.
+### 1. Validación duplicada en `EjemplarFormulario` — se mantiene, documentada
 
-- **`src/contexts/AuthContext.tsx`** — `AuthProvider` + hook `useAuth()`.
-  Carga la sesión existente al montar (`getSession()`), se suscribe a
-  cambios de sesión (`onAuthStateChange`) y expone `session`, `user`,
-  `loading`, `signIn(email, password)` y `signOut()`. El error de
-  `signIn` siempre es genérico ("Credenciales inválidas") para no
-  filtrar si el email existe o no.
+**Decisión:** mantener el chequeo de JS en `manejarEnvio()`, no
+eliminarlo.
 
-- **`src/pages/admin/Login.tsx`** — Formulario email + contraseña, sin
-  estilos. Al autenticar exitosamente redirige a la ruta desde la que
-  el usuario fue rebotado (guardada por `RutaProtegida` en
-  `location.state.from`), o a `/admin` si llegó directo al login.
+**Por qué:** el costo de mantenerlo es cero — no interfiere con el
+flujo normal porque el HTML `required` ya bloquea el envío antes. El
+beneficio de mantenerlo es real: si en el futuro alguien quita
+`required` del JSX sin darse cuenta de que era la única validación, o
+si el formulario se envía programáticamente (evitando la validación
+nativa del navegador), el chequeo de JS sigue siendo la red de
+seguridad. Eliminarlo no aportaba nada y sí quitaba una capa de
+protección barata.
 
-- **`src/components/admin/RutaProtegida.tsx`** — Ruta de layout (no
-  wrapper de `children`): renderiza `<Outlet />`. Se usa como elemento
-  de una `<Route>` padre para proteger todas sus rutas hijas. Mientras
-  `loading` es `true` muestra un mensaje de verificación; si no hay
-  `session`, redirige a `/admin/login`.
+**Cambio real:** un comentario en `EjemplarFormulario.tsx` (arriba del
+componente y en la línea del chequeo) documentando que la duplicación
+es intencional. Cero cambios de comportamiento.
 
-- **`src/routes/rutasAuth.tsx`** — Rutas propias de Capa 2 (`/admin/login`),
-  exportadas como array para que `routes/index.tsx` las componga.
+### 2. `TarjetaEjemplar` no era accesible por teclado — corregido
 
-- **`src/routes/index.tsx`** — Composición central de todas las rutas
-  de la app. Único archivo que otras capas deben tocar para registrar
-  las suyas (ver comentario con el ejemplo de Capa 4 dentro del
-  archivo). Hoy incluye placeholders temporales para `/` y `/admin`
-  que Capa 3 y Capa 4 reemplazan.
+**Decisión:** agregar `tabIndex={0}`, `role="button"`, `aria-label` y
+manejo de `onKeyDown` (Enter/Espacio) a la tarjeta.
 
-- **`src/App.tsx`** — `AuthProvider` + `BrowserRouter` + `AppRoutes`.
+**Por qué:** es una mejora real y de bajo riesgo sobre una limitación
+heredada de Mori 1.0. El proyecto ya prioriza explícitamente mantener
+(y por extensión, mejorar cuando sea razonable) la accesibilidad del
+flujo de modal — dejar el disparador inalcanzable por teclado iba en
+contra de ese principio. El fix no cambia el comportamiento con mouse,
+no interfiere con el botón "Consultar" (que sigue con
+`stopPropagation` y su propio `tabIndex` nativo de `<a>`), y usa el
+patrón estándar de accesibilidad para "div que actúa como botón".
 
-- **`src/main.tsx`** — Punto de entrada. Solo monta `<App />`.
+**Cambio real:** ver el archivo — la tarjeta ahora es alcanzable con
+`Tab` y activable con `Enter`/`Espacio`, además de clic de mouse.
 
-- **`.env.example`** — Plantilla de variables de entorno para el
-  proyecto Supabase `tjgkzzpvqrqvmshcwwtl` (región `sa-east-1`). No es
-  el `.env` real: cópialo y completa `VITE_SUPABASE_ANON_KEY` con la
-  clave anónima pública (no la `service_role`).
+**Nota para quien continúe con Capa 6 u otra ronda de testing:** con
+este fix, ya sería posible escribir un test de `ModalEjemplar` que
+reuse `TarjetaEjemplar` real (en vez del harness con `<button>`) para
+probar la devolución de foco de extremo a extremo. No lo agregué en
+esta entrega para no exceder el alcance que me pediste (integrar +
+corregir, no ampliar cobertura de tests) — quedó como sugerencia.
 
-## Antes de correr `npm run dev`
+## Verificación pendiente de tu parte
 
-1. Verifica que estas dos dependencias estén instaladas (no estaban en
-   capas anteriores):
-   ```bash
-   npm install @supabase/supabase-js react-router-dom
-   ```
-2. Copia `.env.example` a `.env` y completa `VITE_SUPABASE_ANON_KEY`
-   (Supabase → Project Settings → API → `anon` `public`).
-3. Confirma que `index.html` tiene `<div id="root"></div>` (scaffold
-   estándar de Vite) — `main.tsx` asume que existe.
-4. Si ya tenías un `App.tsx` o rutas propias de otra capa, avisa antes
-   de sobrescribir — este `App.tsx` asume que es el único punto de
-   montaje del router.
+Después de copiar los archivos:
 
-## Qué NO incluye esta entrega
+```bash
+npm install
+npm test        # deben seguir pasando los 12 tests
+npm run build   # confirma que tsc -b sigue sin errores (el fix de
+                 # TarjetaEjemplar usa React.KeyboardEvent, tipado
+                 # estándar, no debería romper nada)
+npm run dev     # prueba manual: Tab hasta una tarjeta del catálogo,
+                 # Enter para abrir el modal, Escape para cerrar
+```
 
-- Recuperación de contraseña (`resetPasswordForEmail`). No estaba en
-  el Definition of Done de la guía; si la necesitas, avisa y se agrega
-  como parte de Capa 2.
-- El usuario admin en sí no se crea desde aquí — no hay registro
-  público por diseño. Créalo desde el dashboard de Supabase
-  (Authentication → Users → Add user) o con `auth.admin.createUser()`
-  server-side.
-- El botón de logout en la UI del panel: `signOut()` ya está expuesto
-  vía `useAuth()`, pero el componente visual que lo use es parte de
-  Capa 4.
-
-## Verificación del criterio de "terminada"
-
-- `npm run dev` compila sin errores de TypeScript.
-- `http://localhost:5173/admin/login` muestra el formulario.
-- `http://localhost:5173/admin` sin sesión activa redirige a
-  `/admin/login`.
-- Con sesión activa (usuario creado en Supabase, login exitoso),
-  `/admin` muestra el placeholder de Capa 4 en vez de redirigir.
+Si `npm test` sigue en verde y `npm run dev` muestra la tarjeta
+navegable por teclado, la integración de Capa 6 queda cerrada.

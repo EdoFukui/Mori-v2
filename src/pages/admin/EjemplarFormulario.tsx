@@ -4,8 +4,17 @@
 // por la prop `modo`. En modo 'editar' precarga los datos existentes
 // vía obtenerEjemplarPorId(); en modo 'crear' parte de valores vacíos.
 //
-// Mismas asunciones sin verificar que en PanelAdmin.tsx respecto a la
-// ruta de useCatalogoStore — ver ese archivo para el detalle.
+// DECISIÓN SOBRE VALIDACIÓN EN DOS CAPAS (hallazgo de Capa 6):
+// nombre/especie/condicion tienen `required` en el HTML, y el chequeo
+// equivalente en manejarEnvio() es inalcanzable por un clic normal en
+// "Guardar" (el navegador bloquea el submit antes de que corra React).
+// Se decide MANTENER el chequeo de JS a propósito, como defensa en
+// profundidad: cubre el caso de que alguien quite `required` del JSX
+// más adelante sin notar que era la única validación real, y el envío
+// programático del form (fireEvent.submit / form.submit()) sigue
+// pasando por acá. El costo de mantenerlo es cero: no interfiere con
+// el flujo normal, solo actúa como red de seguridad si la validación
+// nativa deja de estar presente por cualquier motivo.
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { Categoria, Estado, Tamano } from '../../types/ejemplar';
@@ -93,6 +102,9 @@ export default function EjemplarFormulario({ modo }: Props) {
     event.preventDefault();
     setError(null);
 
+    // Ver nota al inicio del archivo: este chequeo es defensa en
+    // profundidad, no la validación principal (esa la hace `required`
+    // en el HTML). Se mantiene deliberadamente.
     if (!datos.nombre.trim() || !datos.especie.trim() || !datos.condicion.trim()) {
       setError('Nombre, especie y condición son obligatorios.');
       return;
