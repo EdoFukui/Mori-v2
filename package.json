@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "postinstall": "node scripts/fix-bin-permissions.cjs",
     "test": "jest --config jest.config.cjs"
   },
   "dependencies": {
