@@ -1,93 +1,159 @@
-# Capa 6 — Testing (consolidada, con correcciones aplicadas)
+# 🌿 Mori 2.0 — Tienda de plantas exóticas (React + Supabase)
 
-Esta entrega integra el trabajo original de Capa 6 (Jest + RTL, 12
-tests) más dos correcciones que decidí aplicar sobre los hallazgos que
-esa capa reportó — señaladas explícitamente, no aplicadas en silencio.
+Evolución de [Mori](https://github.com/EdoFukui/Mori) (sitio estático vanilla
+JS) hacia una aplicación completa con panel de administración, autenticación
+real y base de datos gestionada. Migra la tienda pública ya validada de
+Mori 1.0 a componentes de React, y agrega gestión de catálogo sin tocar
+código ni JSON a mano.
 
-## Instalación
+> Proyecto de portafolio. Muestra la migración de un sitio estático bien
+> hecho hacia una aplicación con framework, backend real y despliegue en
+> producción — sin perder el diseño ni la accesibilidad ya resueltos en
+> la v1.
 
-Copiá el contenido de esta carpeta sobre `Mori-v2/`, respetando la
-estructura. **`package.json` reemplaza al existente** (agrega
-devDependencies de testing + el script `test`; ninguna dependencia de
-producción cambia).
+## ✨ Características
+
+- **Panel de administración con login real** (Supabase Auth): crear, editar,
+  marcar reservado/vendido y borrar ejemplares desde el navegador.
+- **Tienda pública migrada a componentes**, con el mismo diseño, paleta y
+  animaciones de Mori 1.0 — incluyendo el fondo de timelapse controlado por
+  scroll y el modal de detalle con focus trap.
+- **Estado global con Zustand** para catálogo y filtros, sincronizado en
+  tiempo real con los cambios del panel admin (sin refetch completo).
+- **Base de datos y Storage reales** con Supabase (Postgres + RLS +
+  bucket de imágenes), reemplazando el `plantas.json` estático.
+- **12 tests** con Jest + React Testing Library sobre los flujos más
+  críticos: validación del formulario de alta, filtro del catálogo, y
+  apertura/cierre accesible del modal.
+- **Deploy en Vercel** conectado al repo, con CI que corre los tests en
+  cada push, y un workflow de keep-alive para que la demo no aparezca
+  pausada por inactividad del plan gratuito de Supabase.
+
+**Lo que este proyecto NO es (igual que en Mori 1.0):** un e-commerce con
+pasarela de pago real. El contacto para cerrar una compra o trueque sigue
+siendo directo por WhatsApp.
+
+## 🧱 Stack
+
+React 19 + TypeScript + Vite · Supabase (Postgres, Auth, Storage) ·
+Zustand · React Router · Jest + React Testing Library · Vercel.
+
+CSS reutilizado y adaptado de Mori 1.0 (no reescrito en un framework de
+utilidades) — el sistema visual ya estaba validado y no aportaba valor de
+portafolio reescribirlo.
+
+## 📂 Estructura del proyecto
+
+```
+├── public/
+│   └── assets/              # Frames del fondo animado, fuentes, imágenes
+├── supabase/
+│   └── migrations/          # SQL versionado (tabla ejemplares, RLS)
+├── src/
+│   ├── types/
+│   │   └── ejemplar.ts      # Contrato de datos compartido por todo el proyecto
+│   ├── lib/
+│   │   ├── supabase.ts      # Cliente único de Supabase
+│   │   ├── mapEjemplar.ts   # Mapeo fila de Supabase (snake_case) → Ejemplar
+│   │   └── ejemplaresAdminApi.ts  # CRUD contra Supabase + upload de imágenes
+│   ├── store/                # Zustand: catálogo y filtros
+│   ├── contexts/
+│   │   └── AuthContext.tsx   # Sesión de Supabase Auth
+│   ├── components/
+│   │   ├── publico/          # Tienda pública (catálogo, tarjeta, modal, fondo)
+│   │   └── admin/             # Tabla de ejemplares, ruta protegida, confirmaciones
+│   ├── pages/
+│   │   ├── InicioPage.tsx
+│   │   └── admin/             # Login, panel, formulario de alta/edición
+│   ├── routes/                # Un archivo de rutas por capa + composición central
+│   ├── hooks/
+│   └── tests/                 # Setup de Jest + mocks compartidos
+└── .github/workflows/         # CI de tests + keep-alive de Supabase
+```
+
+## 🚀 Cómo correrlo localmente
 
 ```bash
 npm install
+```
+
+Creá un archivo `.env` en la raíz con las credenciales de tu proyecto de
+Supabase (no se sube al repo):
+
+```
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-clave-anonima-publica
+```
+
+```bash
+npm run dev       # servidor de desarrollo (Vite)
+npm test          # corre los 12 tests con Jest + RTL
+npm run build     # build de producción (tsc -b && vite build)
+```
+
+Para usar el panel de administración, creá un usuario manualmente desde el
+dashboard de Supabase: **Authentication → Users → Add user**.
+
+## 🏗️ Arquitectura de desarrollo — capas en paralelo
+
+Este proyecto se construyó dividido en 7 "capas" trabajadas de forma
+independiente (backend, auth, tienda pública, admin, estado global,
+testing, deploy), cada una con su propio contrato de dependencias sobre
+un tipo `Ejemplar` fijado desde el inicio. El detalle completo de esta
+arquitectura, las decisiones técnicas fijadas y el orden de dependencias
+entre capas está documentado en `mori-2.0-guia-proyecto.md`.
+
+Convenciones que se mantuvieron durante todo el proyecto:
+
+- `main.tsx` y `App.tsx` nunca se modifican por capa; cada una registra
+  sus rutas en `src/routes/` y las compone en `src/routes/index.tsx`.
+- Ninguna capa modifica silenciosamente componentes de otra — los
+  cambios entre capas se señalan explícitamente (ver historial de commits
+  y los README de cada entrega dentro del repo).
+- Las políticas de RLS de la tabla y las policies de Storage del bucket
+  se configuran y verifican por separado — no son lo mismo.
+
+## 🧪 Testing
+
+```bash
 npm test
 ```
 
-## Qué contiene
+12 tests en 3 suites, cubriendo:
+- Validación del formulario de alta de ejemplar (incluye una defensa en
+  profundidad intencional entre validación HTML nativa y JS).
+- Filtro del catálogo por categoría, sobre la integración real de
+  Zustand + Supabase (no mocks de los stores).
+- Apertura, cierre (Escape y botón X) y devolución de foco del modal de
+  detalle.
 
-| Archivo | Origen | Cambio |
-|---|---|---|
-| `jest.config.cjs` | Capa 6 | Sin cambios |
-| `babel.config.cjs` | Capa 6 | Sin cambios |
-| `src/tests/setupTests.ts` | Capa 6 | Sin cambios |
-| `src/tests/styleMock.cjs` | Capa 6 | Sin cambios |
-| `src/pages/admin/EjemplarFormulario.test.tsx` | Capa 6 | Sin cambios |
-| `src/components/publico/Catalogo.test.tsx` | Capa 6 | Sin cambios |
-| `src/components/publico/ModalEjemplar.test.tsx` | Capa 6 | Sin cambios |
-| `package.json` | Capa 6 | Sin cambios (ya coincidía con el real del repo) |
-| `src/pages/admin/EjemplarFormulario.tsx` | Capa 4 | **Comentario agregado** — ver Corrección 1 |
-| `src/components/publico/TarjetaEjemplar.tsx` | Capa 3 | **Código modificado** — ver Corrección 2 |
+## 🌐 Deploy
 
-## Correcciones aplicadas
+Desplegado en Vercel, conectado al repo con deploy automático en cada
+push a `main`. `vercel.json` resuelve el ruteo de SPA para que las rutas
+internas (`/catalogo`, `/admin/login`, etc.) funcionen con acceso directo,
+no solo navegando desde adentro de la app.
 
-### 1. Validación duplicada en `EjemplarFormulario` — se mantiene, documentada
+Un workflow de GitHub Actions corre los tests en cada push/PR, y otro
+hace ping periódico a Supabase para evitar que el proyecto se pause por
+inactividad (límite del plan gratuito).
 
-**Decisión:** mantener el chequeo de JS en `manejarEnvio()`, no
-eliminarlo.
+## 🗺️ Roadmap
 
-**Por qué:** el costo de mantenerlo es cero — no interfiere con el
-flujo normal porque el HTML `required` ya bloquea el envío antes. El
-beneficio de mantenerlo es real: si en el futuro alguien quita
-`required` del JSX sin darse cuenta de que era la única validación, o
-si el formulario se envía programáticamente (evitando la validación
-nativa del navegador), el chequeo de JS sigue siendo la red de
-seguridad. Eliminarlo no aportaba nada y sí quitaba una capa de
-protección barata.
+Con esto, Mori 2.0 cubre el ciclo completo: catálogo público dinámico,
+gestión real desde un panel de administración, y despliegue en producción
+sobre infraestructura gestionada. Posibles próximos pasos, no
+comprometidos: recuperación de contraseña desde la UI del panel admin, y
+ampliar la cobertura de tests a los componentes de autenticación.
 
-**Cambio real:** un comentario en `EjemplarFormulario.tsx` (arriba del
-componente y en la línea del chequeo) documentando que la duplicación
-es intencional. Cero cambios de comportamiento.
+## 📄 Licencia
 
-### 2. `TarjetaEjemplar` no era accesible por teclado — corregido
+Mismo criterio que Mori 1.0: el código puede visualizarse libremente con
+fines de portafolio, pero no está autorizado su uso, copia ni
+redistribución sin permiso previo del autor — ver [`LICENSE`](./LICENSE).
+Las fotografías del catálogo pertenecen a Mori y tampoco están
+autorizadas para su reutilización.
 
-**Decisión:** agregar `tabIndex={0}`, `role="button"`, `aria-label` y
-manejo de `onKeyDown` (Enter/Espacio) a la tarjeta.
+## ✍️ Autor
 
-**Por qué:** es una mejora real y de bajo riesgo sobre una limitación
-heredada de Mori 1.0. El proyecto ya prioriza explícitamente mantener
-(y por extensión, mejorar cuando sea razonable) la accesibilidad del
-flujo de modal — dejar el disparador inalcanzable por teclado iba en
-contra de ese principio. El fix no cambia el comportamiento con mouse,
-no interfiere con el botón "Consultar" (que sigue con
-`stopPropagation` y su propio `tabIndex` nativo de `<a>`), y usa el
-patrón estándar de accesibilidad para "div que actúa como botón".
-
-**Cambio real:** ver el archivo — la tarjeta ahora es alcanzable con
-`Tab` y activable con `Enter`/`Espacio`, además de clic de mouse.
-
-**Nota para quien continúe con Capa 6 u otra ronda de testing:** con
-este fix, ya sería posible escribir un test de `ModalEjemplar` que
-reuse `TarjetaEjemplar` real (en vez del harness con `<button>`) para
-probar la devolución de foco de extremo a extremo. No lo agregué en
-esta entrega para no exceder el alcance que me pediste (integrar +
-corregir, no ampliar cobertura de tests) — quedó como sugerencia.
-
-## Verificación pendiente de tu parte
-
-Después de copiar los archivos:
-
-```bash
-npm install
-npm test        # deben seguir pasando los 12 tests
-npm run build   # confirma que tsc -b sigue sin errores (el fix de
-                 # TarjetaEjemplar usa React.KeyboardEvent, tipado
-                 # estándar, no debería romper nada)
-npm run dev     # prueba manual: Tab hasta una tarjeta del catálogo,
-                 # Enter para abrir el modal, Escape para cerrar
-```
-
-Si `npm test` sigue en verde y `npm run dev` muestra la tarjeta
-navegable por teclado, la integración de Capa 6 queda cerrada.
+**Eduardo Hidalgo S.**
